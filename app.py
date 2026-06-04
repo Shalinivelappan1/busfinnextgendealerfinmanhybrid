@@ -233,9 +233,7 @@ language = st.sidebar.selectbox(
 )
 
 menu = st.sidebar.radio(
-
     "Choose Learning Module",
-
     [
 
         "🏠 Home Dashboard",
@@ -264,10 +262,13 @@ menu = st.sidebar.radio(
 
         "📊 Dealer Reflection & Financial Scorecard",
 
-        "📝 90-Day Action Plan"
+        "📝 90-Day Action Plan",
+
+        "🏆 Hall of Fame",
+
+        "🏆 Graduation Certificate"
 
     ]
-
 )
 
 # =========================================================
@@ -304,7 +305,7 @@ through simulations, visual dashboards and business decision exercises.
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Modules", "13")
+    col1.metric("Modules", "16")
 
     col2.metric("Simulations", "6")
 
