@@ -5567,16 +5567,7 @@ Representing
 {city}
 </p>
 
-<h2>
-{badge}
-</h2>
 
-<h3>
-Overall Development Score:
-{overall_score}/100
-</h3>
-
-<br>
 
 <p>
 Developed and Designed by
