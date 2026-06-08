@@ -797,18 +797,21 @@ elif menu == "🏗️ Dealer Economics Simulator":
     st.markdown("""
     ### Understanding Real Dealer Profitability
 
-    This simulator helps visualize how:
+    This simulator demonstrates how:
 
+    - PD (Price Difference/Rebate)
     - Quantity Discounts
     - Target Incentives
     - Cash Discounts
-    - Price Discounts
+    - Annual Incentives
     - Labour Costs
     - Delivery Costs
     - Credit Days
     - Inventory Days
 
-    impact dealer profitability and cash flow.
+    influence dealer profitability and cash flow.
+
+    ---
     """)
 
     # =====================================================
@@ -823,55 +826,71 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
         billing_price = st.number_input(
             "Billing Price (₹/Bag)",
+            min_value=0.0,
             value=365.0
         )
 
         selling_price = st.number_input(
-            "Selling Price (₹/Bag)",
+            "Market Selling Price (₹/Bag)",
+            min_value=0.0,
             value=330.0
         )
 
         monthly_volume = st.number_input(
             "Monthly Volume (Bags)",
+            min_value=1,
             value=5000
         )
 
     with col2:
 
+        pd_rebate = st.number_input(
+            "PD from Company (₹/Bag)",
+            min_value=0.0,
+            value=30.0
+        )
+
         quantity_discount = st.number_input(
             "Quantity Discount (₹/Bag)",
-            value=3.0
+            min_value=0.0,
+            value=5.0
         )
 
         target_incentive = st.number_input(
             "Target Incentive (₹/Bag)",
+            min_value=0.0,
             value=5.0
-        )
-
-        cash_discount = st.number_input(
-            "Cash Discount (₹/Bag)",
-            value=2.0
         )
 
     with col3:
 
-        price_discount = st.number_input(
-            "Price Discount Given to Customer (₹/Bag)",
-            value=5.0
+        cash_discount = st.number_input(
+            "Cash Discount (₹/Bag)",
+            min_value=0.0,
+            value=2.0
+        )
+
+        annual_incentive = st.number_input(
+            "Annual Incentive (₹/Bag)",
+            min_value=0.0,
+            value=10.0
         )
 
         labour_cost = st.number_input(
             "Labour Cost (₹/Bag)",
+            min_value=0.0,
             value=5.5
         )
 
         delivery_cost = st.number_input(
             "Delivery Cost (₹/Bag)",
+            min_value=0.0,
             value=2.0
         )
 
         other_cost = st.number_input(
             "Other Cost (₹/Bag)",
+            min_value=0.0,
             value=1.0
         )
 
@@ -879,20 +898,21 @@ elif menu == "🏗️ Dealer Economics Simulator":
     # CALCULATIONS
     # =====================================================
 
-    effective_cost = (
-        billing_price
-        - quantity_discount
-        - target_incentive
-        - cash_discount
+    total_incentives = (
+        pd_rebate
+        + quantity_discount
+        + target_incentive
+        + cash_discount
+        + annual_incentive
     )
 
-    effective_selling_price = (
-        selling_price
-        - price_discount
+    effective_cost = (
+        billing_price
+        - total_incentives
     )
 
     trading_margin = (
-        effective_selling_price
+        selling_price
         - effective_cost
     )
 
@@ -906,12 +926,6 @@ elif menu == "🏗️ Dealer Economics Simulator":
     monthly_profit = (
         net_profit_per_bag
         * monthly_volume
-    )
-
-    total_incentives = (
-        quantity_discount
-        + target_incentive
-        + cash_discount
     )
 
     # =====================================================
@@ -928,8 +942,8 @@ elif menu == "🏗️ Dealer Economics Simulator":
     )
 
     c2.metric(
-        "Effective Selling Price",
-        f"₹{effective_selling_price:.2f}"
+        "Selling Price",
+        f"₹{selling_price:.2f}"
     )
 
     c3.metric(
@@ -955,16 +969,32 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
     incentive_df = pd.DataFrame({
 
-        "Incentive":[
+        "Incentive": [
+
+            "PD Rebate",
+
             "Quantity Discount",
+
             "Target Incentive",
-            "Cash Discount"
+
+            "Cash Discount",
+
+            "Annual Incentive"
+
         ],
 
-        "₹/Bag":[
+        "₹/Bag": [
+
+            pd_rebate,
+
             quantity_discount,
+
             target_incentive,
-            cash_discount
+
+            cash_discount,
+
+            annual_incentive
+
         ]
 
     })
@@ -975,7 +1005,7 @@ elif menu == "🏗️ Dealer Economics Simulator":
     )
 
     st.success(
-        f"Total Incentive Benefit = ₹{total_incentives:.2f}/Bag"
+        f"Total Incentive Benefit = ₹{total_incentives:.2f} per bag"
     )
 
     # =====================================================
@@ -986,44 +1016,60 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
     bridge_df = pd.DataFrame({
 
-        "Particulars":[
+        "Particulars": [
 
             "Billing Price",
+
+            "PD Rebate",
+
             "Quantity Discount",
+
             "Target Incentive",
+
             "Cash Discount",
+
+            "Annual Incentive",
+
             "Effective Cost",
 
             "Selling Price",
-            "Price Discount",
-            "Effective Selling Price",
 
             "Trading Margin",
 
             "Labour Cost",
+
             "Delivery Cost",
+
             "Other Cost",
 
             "Net Profit"
 
         ],
 
-        "₹":[
+        "₹/Bag": [
 
             billing_price,
+
+            -pd_rebate,
+
             -quantity_discount,
+
             -target_incentive,
+
             -cash_discount,
+
+            -annual_incentive,
+
             effective_cost,
 
             selling_price,
-            -price_discount,
-            effective_selling_price,
 
             trading_margin,
 
             -labour_cost,
+
             -delivery_cost,
+
             -other_cost,
 
             net_profit_per_bag
@@ -1045,22 +1091,32 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
     chart_df = pd.DataFrame({
 
-        "Component":[
+        "Component": [
+
             "Trading Margin",
-            "Incentives",
+
             "Labour",
+
             "Delivery",
+
             "Other Cost",
+
             "Net Profit"
+
         ],
 
-        "Amount":[
+        "Amount": [
+
             trading_margin,
-            total_incentives,
+
             -labour_cost,
+
             -delivery_cost,
+
             -other_cost,
+
             net_profit_per_bag
+
         ]
 
     })
@@ -1104,7 +1160,7 @@ elif menu == "🏗️ Dealer Economics Simulator":
         )
 
     monthly_sales_value = (
-        effective_selling_price
+        selling_price
         * monthly_volume
     )
 
@@ -1139,9 +1195,37 @@ elif menu == "🏗️ Dealer Economics Simulator":
     )
 
     c3.metric(
-        "Working Capital",
+        "Working Capital Requirement",
         f"₹{working_capital:,.0f}"
     )
+
+    # =====================================================
+    # PROFIT VS CASH FLOW
+    # =====================================================
+
+    st.subheader("💡 Profit vs Cash Flow")
+
+    pd_receivable = (
+        pd_rebate
+        * monthly_volume
+    )
+
+    st.info(f"""
+PD of ₹{pd_rebate:.2f} per bag is received later from the company.
+
+Expected PD Receivable:
+
+₹{pd_receivable:,.0f}
+
+This improves accounting profit today,
+but cash is received in the future.
+
+This demonstrates the difference between:
+
+• Profitability
+
+• Cash Flow
+""")
 
     # =====================================================
     # DEALER HEALTH SCORE
@@ -1159,9 +1243,6 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
     if net_profit_per_bag < 0:
         health_score -= 30
-
-    if price_discount > 10:
-        health_score -= 10
 
     health_score = max(0, health_score)
 
@@ -1187,13 +1268,13 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
     st.subheader("🧠 Dealer Insights")
 
-    if price_discount > trading_margin:
-        st.warning(
-            "Price discount is consuming most of your margin."
+    if net_profit_per_bag < 0:
+        st.error(
+            "Current business configuration is loss-making."
         )
 
     if credit_days > 60:
-        st.error(
+        st.warning(
             "High collection risk detected."
         )
 
@@ -1202,9 +1283,9 @@ elif menu == "🏗️ Dealer Economics Simulator":
             "Inventory is locking significant working capital."
         )
 
-    if net_profit_per_bag < 0:
-        st.error(
-            "Current configuration is loss-making."
+    if total_incentives > trading_margin:
+        st.info(
+            "A significant portion of profitability is driven by incentives."
         )
 
     if net_profit_per_bag > 10:
@@ -1220,21 +1301,17 @@ elif menu == "🏗️ Dealer Economics Simulator":
 
 ### Key Takeaways
 
-✓ Sales ≠ Profit
+✓ Billing Price is not Effective Cost
 
-✓ Profit ≠ Cash
+✓ Incentives significantly impact profitability
 
-✓ Quantity Discounts improve effective cost
-
-✓ Target Incentives drive dealer behaviour
-
-✓ Cash Discounts improve liquidity
+✓ Profit is different from Cash Flow
 
 ✓ Credit Days increase receivables
 
 ✓ Inventory Days increase working capital
 
-### Sustainable Dealer Success
+✓ Sustainable dealer success depends on:
 
 Margin
 +
