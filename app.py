@@ -786,7 +786,7 @@ Cash flow is survival.
 Profit is reward.
 
 """)
- # =========================================================
+# =========================================================
 # DEALER ECONOMICS SIMULATOR
 # =========================================================
 
@@ -795,28 +795,21 @@ elif menu == "🏗️ Dealer Economics Simulator":
     st.header("🏗️ Dealer Economics Simulator")
 
     st.markdown("""
+    ### Understanding Real Dealer Profitability
 
-### The ₹365 → ₹330 Dealer Puzzle
+    This simulator helps visualize how:
 
-A dealer says:
+    - Quantity Discounts
+    - Target Incentives
+    - Cash Discounts
+    - Price Discounts
+    - Labour Costs
+    - Delivery Costs
+    - Credit Days
+    - Inventory Days
 
-• Billing Price = ₹365
-
-• Customer Selling Price = ₹330
-
-• Target Incentive = ₹5
-
-• Labour = ₹5.5
-
-• Delivery Cost = Variable
-
-### Question:
-
-Where does profit come from?
-
-Let's find out.
-
-""")
+    impact dealer profitability and cash flow.
+    """)
 
     # =====================================================
     # INPUTS
@@ -824,17 +817,17 @@ Let's find out.
 
     st.subheader("📥 Dealer Inputs")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
 
         billing_price = st.number_input(
-            "Billing Price per Bag (₹)",
+            "Billing Price (₹/Bag)",
             value=365.0
         )
 
         selling_price = st.number_input(
-            "Customer Selling Price per Bag (₹)",
+            "Selling Price (₹/Bag)",
             value=330.0
         )
 
@@ -843,30 +836,42 @@ Let's find out.
             value=5000
         )
 
-        target_incentive = st.number_input(
-            "Target Incentive per Bag (₹)",
-            value=5.0
-        )
-
     with col2:
 
-        annual_incentive = st.number_input(
-            "Annual Incentive per Bag (₹)",
+        quantity_discount = st.number_input(
+            "Quantity Discount (₹/Bag)",
             value=3.0
         )
 
+        target_incentive = st.number_input(
+            "Target Incentive (₹/Bag)",
+            value=5.0
+        )
+
+        cash_discount = st.number_input(
+            "Cash Discount (₹/Bag)",
+            value=2.0
+        )
+
+    with col3:
+
+        price_discount = st.number_input(
+            "Price Discount Given to Customer (₹/Bag)",
+            value=5.0
+        )
+
         labour_cost = st.number_input(
-            "Labour Cost per Bag (₹)",
+            "Labour Cost (₹/Bag)",
             value=5.5
         )
 
         delivery_cost = st.number_input(
-            "Delivery Cost per Bag (₹)",
+            "Delivery Cost (₹/Bag)",
             value=2.0
         )
 
         other_cost = st.number_input(
-            "Other Cost per Bag (₹)",
+            "Other Cost (₹/Bag)",
             value=1.0
         )
 
@@ -874,40 +879,43 @@ Let's find out.
     # CALCULATIONS
     # =====================================================
 
-    trading_margin = selling_price - billing_price
-
-    total_incentive = (
-        target_incentive +
-        annual_incentive
+    effective_cost = (
+        billing_price
+        - quantity_discount
+        - target_incentive
+        - cash_discount
     )
 
-    effective_margin = (
-        trading_margin +
-        total_incentive
+    effective_selling_price = (
+        selling_price
+        - price_discount
+    )
+
+    trading_margin = (
+        effective_selling_price
+        - effective_cost
     )
 
     net_profit_per_bag = (
-
-        effective_margin
-
+        trading_margin
         - labour_cost
-
         - delivery_cost
-
         - other_cost
-
     )
 
     monthly_profit = (
-
         net_profit_per_bag
-
         * monthly_volume
+    )
 
+    total_incentives = (
+        quantity_discount
+        + target_incentive
+        + cash_discount
     )
 
     # =====================================================
-    # KPI DASHBOARD
+    # DASHBOARD
     # =====================================================
 
     st.subheader("📊 Dealer Economics Dashboard")
@@ -915,71 +923,107 @@ Let's find out.
     c1, c2, c3, c4 = st.columns(4)
 
     c1.metric(
-        "Trading Margin/Bag",
-        f"₹{trading_margin:.2f}"
+        "Effective Cost",
+        f"₹{effective_cost:.2f}"
     )
 
     c2.metric(
-        "Incentives/Bag",
-        f"₹{total_incentive:.2f}"
+        "Effective Selling Price",
+        f"₹{effective_selling_price:.2f}"
     )
 
     c3.metric(
+        "Trading Margin",
+        f"₹{trading_margin:.2f}"
+    )
+
+    c4.metric(
         "Net Profit/Bag",
         f"₹{net_profit_per_bag:.2f}"
     )
 
-    c4.metric(
+    st.metric(
         "Monthly Profit",
         f"₹{monthly_profit:,.0f}"
     )
 
     # =====================================================
-    # WATERFALL TABLE
+    # INCENTIVE ANALYSIS
     # =====================================================
 
-    st.subheader("💰 Dealer Profit Waterfall")
+    st.subheader("🎯 Incentive Contribution Analysis")
 
-    waterfall = pd.DataFrame({
+    incentive_df = pd.DataFrame({
+
+        "Incentive":[
+            "Quantity Discount",
+            "Target Incentive",
+            "Cash Discount"
+        ],
+
+        "₹/Bag":[
+            quantity_discount,
+            target_incentive,
+            cash_discount
+        ]
+
+    })
+
+    st.dataframe(
+        incentive_df,
+        use_container_width=True
+    )
+
+    st.success(
+        f"Total Incentive Benefit = ₹{total_incentives:.2f}/Bag"
+    )
+
+    # =====================================================
+    # PROFITABILITY BRIDGE
+    # =====================================================
+
+    st.subheader("🌉 Dealer Profitability Bridge")
+
+    bridge_df = pd.DataFrame({
 
         "Particulars":[
 
-            "Selling Price",
-
             "Billing Price",
+            "Quantity Discount",
+            "Target Incentive",
+            "Cash Discount",
+            "Effective Cost",
+
+            "Selling Price",
+            "Price Discount",
+            "Effective Selling Price",
 
             "Trading Margin",
 
-            "Target Incentive",
-
-            "Annual Incentive",
-
             "Labour Cost",
-
             "Delivery Cost",
-
             "Other Cost",
 
             "Net Profit"
 
         ],
 
-        "₹/Bag":[
-
-            selling_price,
+        "₹":[
 
             billing_price,
+            -quantity_discount,
+            -target_incentive,
+            -cash_discount,
+            effective_cost,
+
+            selling_price,
+            -price_discount,
+            effective_selling_price,
 
             trading_margin,
 
-            target_incentive,
-
-            annual_incentive,
-
             -labour_cost,
-
             -delivery_cost,
-
             -other_cost,
 
             net_profit_per_bag
@@ -989,60 +1033,43 @@ Let's find out.
     })
 
     st.dataframe(
-        waterfall,
+        bridge_df,
         use_container_width=True
     )
 
     # =====================================================
-    # PROFIT VISUAL
+    # PROFIT DRIVER CHART
     # =====================================================
+
+    st.subheader("📈 Profit Driver Analysis")
 
     chart_df = pd.DataFrame({
 
         "Component":[
-
             "Trading Margin",
-
             "Incentives",
-
             "Labour",
-
             "Delivery",
-
             "Other Cost",
-
             "Net Profit"
-
         ],
 
         "Amount":[
-
             trading_margin,
-
-            total_incentive,
-
+            total_incentives,
             -labour_cost,
-
             -delivery_cost,
-
             -other_cost,
-
             net_profit_per_bag
-
         ]
 
     })
 
     fig = px.bar(
-
         chart_df,
-
         x="Component",
-
         y="Amount",
-
         title="Dealer Profit Drivers"
-
     )
 
     st.plotly_chart(
@@ -1051,221 +1078,178 @@ Let's find out.
     )
 
     # =====================================================
-    # TARGET SIMULATOR
+    # WORKING CAPITAL ANALYSIS
     # =====================================================
 
-    st.subheader("🎯 Target Achievement Simulator")
+    st.subheader("💰 Working Capital Analysis")
 
-    target_volume = st.number_input(
-        "Monthly Target Volume",
-        value=6000
-    )
+    col1, col2 = st.columns(2)
 
-    achievement_pct = (
+    with col1:
 
-        monthly_volume
+        credit_days = st.slider(
+            "Customer Credit Days",
+            0,
+            120,
+            30
+        )
 
-        /
+    with col2:
 
-        target_volume
-
-    ) * 100
-
-    st.metric(
-        "Target Achievement",
-        f"{achievement_pct:.1f}%"
-    )
-
-    if achievement_pct >= 100:
-
-        st.success("""
-
-🟢 Target Achieved
-
-Eligible for full incentive benefits.
-
-""")
-
-    else:
-
-        st.warning("""
-
-🟠 Target Not Achieved
-
-Potential incentive opportunity lost.
-
-""")
-
-    # =====================================================
-    # CREDIT IMPACT
-    # =====================================================
-
-    st.subheader("🤝 Credit Impact Simulator")
-
-    credit_days = st.slider(
-        "Customer Credit Days",
-        0,
-        120,
-        30
-    )
+        inventory_days = st.slider(
+            "Inventory Days",
+            0,
+            120,
+            30
+        )
 
     monthly_sales_value = (
-        monthly_volume *
-        selling_price
+        effective_selling_price
+        * monthly_volume
     )
 
     receivables = (
-
         monthly_sales_value
-
-        *
-
-        credit_days
-
-        /
-
-        30
-
-    )
-
-    st.metric(
-        "Receivables Blocked",
-        f"₹{receivables:,.0f}"
-    )
-
-    # =====================================================
-    # INVENTORY IMPACT
-    # =====================================================
-
-    st.subheader("📦 Inventory Impact")
-
-    inventory_days = st.slider(
-        "Inventory Days",
-        0,
-        120,
-        30
+        * credit_days
+        / 30
     )
 
     inventory_value = (
-
-        monthly_volume *
-
-        billing_price
-
-        *
-
-        inventory_days
-
-        /
-
-        30
-
+        effective_cost
+        * monthly_volume
+        * inventory_days
+        / 30
     )
 
-    st.metric(
+    working_capital = (
+        receivables
+        + inventory_value
+    )
+
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric(
+        "Receivables",
+        f"₹{receivables:,.0f}"
+    )
+
+    c2.metric(
         "Inventory Investment",
         f"₹{inventory_value:,.0f}"
     )
 
+    c3.metric(
+        "Working Capital",
+        f"₹{working_capital:,.0f}"
+    )
+
     # =====================================================
-    # RISK SCORE
+    # DEALER HEALTH SCORE
     # =====================================================
 
-    st.subheader("🚦 Dealer Health Indicator")
+    st.subheader("🚦 Dealer Health Score")
 
-    risk_score = 100
+    health_score = 100
 
     if credit_days > 60:
-        risk_score -= 20
+        health_score -= 20
 
     if inventory_days > 60:
-        risk_score -= 20
+        health_score -= 20
 
-    if net_profit_per_bag < 5:
-        risk_score -= 20
+    if net_profit_per_bag < 0:
+        health_score -= 30
 
-    risk_score = max(risk_score, 0)
+    if price_discount > 10:
+        health_score -= 10
 
-    st.progress(risk_score/100)
+    health_score = max(0, health_score)
+
+    st.progress(health_score / 100)
 
     st.metric(
         "Dealer Health Score",
-        f"{risk_score}/100"
+        f"{health_score}/100"
     )
 
-    if risk_score >= 80:
-
+    if health_score >= 80:
         st.success("🟢 Healthy Dealer")
 
-    elif risk_score >= 60:
-
+    elif health_score >= 60:
         st.warning("🟠 Moderate Risk")
 
     else:
-
         st.error("🔴 High Financial Risk")
 
     # =====================================================
-    # TAMIL INSIGHT
+    # SMART INSIGHTS
     # =====================================================
 
-    if language == "English + தமிழ்":
+    st.subheader("🧠 Dealer Insights")
 
-        st.info("""
+    if price_discount > trading_margin:
+        st.warning(
+            "Price discount is consuming most of your margin."
+        )
 
-💡 தமிழ் விளக்கம்
+    if credit_days > 60:
+        st.error(
+            "High collection risk detected."
+        )
 
-Dealer லாபம் என்பது
+    if inventory_days > 60:
+        st.warning(
+            "Inventory is locking significant working capital."
+        )
 
-Selling Price மட்டும் அல்ல.
+    if net_profit_per_bag < 0:
+        st.error(
+            "Current configuration is loss-making."
+        )
 
-✓ Target Incentive
+    if net_profit_per_bag > 10:
+        st.success(
+            "Healthy profitability detected."
+        )
 
-✓ Annual Incentive
+    # =====================================================
+    # FINAL LEARNING
+    # =====================================================
 
-✓ Labour Cost
+    st.info("""
 
-✓ Delivery Cost
+### Key Takeaways
 
-✓ Credit Days
+✓ Sales ≠ Profit
 
-✓ Inventory Days
+✓ Profit ≠ Cash
 
-இவை அனைத்தும் சேர்ந்து
+✓ Quantity Discounts improve effective cost
 
-உண்மையான லாபத்தை தீர்மானிக்கின்றன.
+✓ Target Incentives drive dealer behaviour
 
-Cash Flow தான் Business-ஐ காப்பாற்றும்.
+✓ Cash Discounts improve liquidity
+
+✓ Credit Days increase receivables
+
+✓ Inventory Days increase working capital
+
+### Sustainable Dealer Success
+
+Margin
++
+Incentives
++
+Collections
++
+Inventory Control
++
+Cost Discipline
+
+=
+Long-Term Profitability
 
 """)
-
-    # =====================================================
-    # REFLECTION
-    # =====================================================
-
-    st.subheader("📝 Reflection")
-
-    st.text_area(
-        "What is the biggest profitability challenge in your dealership?"
-    )
-
-    st.text_area(
-        "What action can improve dealer economics immediately?"
-    )
-
-    st.success("""
-
-Final Learning:
-
-Sales ≠ Profit
-
-Profit ≠ Cash
-
-Cash Flow + Incentives + Cost Control
-
-= Sustainable Dealership Success
-
-""")   
 # =========================================================
 # PRICING DECISION SIMULATOR
 # =========================================================
